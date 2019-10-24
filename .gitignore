@@ -2,7 +2,7 @@
 
 *.txt
 Code/venv/*
-Code.idea/*
+Code/.idea/*
 *.exe
 footballkey.pem
 Code/__pycache__/*
