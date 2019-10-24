@@ -1,0 +1,8 @@
+# Don't track these files
+
+*.txt
+Code/venv/*
+Code.idea/*
+*.exe
+footballkey.pem
+Code/__pycache__/*
