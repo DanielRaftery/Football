@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 
 
+pd.options.display.max_columns = 999
+
+
 def write_to_db(team_identifier, team_df, engine):
     """
     Writes results to a team's table
@@ -155,7 +158,7 @@ def parse_data():
         if requested_date.lower() == "all":
             print("Are you sure? You may double up on league data! Enter \"Y\" to continue.")
             is_sure = str(input())
-            if is_sure == "Y":
+            if is_sure.lower() == "y":
                 date_list = valid_dates
                 print("Added all valid dates!")
             break
@@ -163,26 +166,30 @@ def parse_data():
             break
         elif requested_date not in valid_dates:
             print("No matches found for this date!")
-        else:
+        elif requested_date not in date_list:
             date_list.append(requested_date)
         requested_date = str(input("Add more dates (in MM/DD/YYYY format)? \"Q\" to quit. "))
 
     print("\nDate selection complete. Selected dates:", [d for d in date_list])
+    proceed = str(input("Do you wish to continue (Y/N)? "))
 
-    if date_list:
-        print("\nWriting data...")
+    if proceed.lower() == 'y':
+        if date_list:
+            print("\nWriting data...")
 
-    for i in range(len(data.entries)):
-        [date, home_team, home_team_df, home_team_id, away_team, away_team_df, away_team_id] = prepare_df(data, i)
-        if date in date_list:
-            write_to_db(home_team_id, home_team_df, engine)
-            # home_info = read_from_db(home_team_id, engine)
-            write_to_db(away_team_id, away_team_df, engine)
-            # away_info = read_from_db(away_team_id, engine)
-            write_to_league_table(home_team, home_team_df, engine)
-            write_to_league_table(away_team, away_team_df, engine)
+        for i in range(len(data.entries)):
+            [date, home_team, home_team_df, home_team_id, away_team, away_team_df, away_team_id] = prepare_df(data, i)
+            if date in date_list:
+                print("\nWriting data to...\n{}".format(home_team_df))
+                write_to_db(home_team_id, home_team_df, engine)
+                print("\nWriting data to...\n{}".format(away_team_df))
+                write_to_db(away_team_id, away_team_df, engine)
+                write_to_league_table(home_team, home_team_df, engine)
+                write_to_league_table(away_team, away_team_df, engine)
 
-    print("Complete!")
+        print("\nComplete!")
+    else:
+        print("\nData input aborted.")
 
 
 if __name__ == "__main__":
