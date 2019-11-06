@@ -20,7 +20,7 @@ championship_teams = ["Barnsley", "Birmingham City", "Blackburn Rovers", "Brentf
 
 league_one_teams = ["Accrington Stanley", "AFC Wimbledon", "Blackpool", "Bolton Wanderers", "Bristol Rovers",
                     "Burton Albion", "Coventry City", "Doncaster Rovers", "Fleetwood Town", "Gillingham",
-                    "Ipswich Town", "Lincoln City", "Milton Keyes Dons", "Oxford United", "Peterborough United",
+                    "Ipswich Town", "Lincoln City", "Milton Keynes Dons", "Oxford United", "Peterborough United",
                     "Portsmouth", "Rochdale", "Rotherham United", "Shrewsbury Town", "Southend United", "Sunderland",
                     "Tranmere Rovers", "Wycombe Wanderers"]
 
