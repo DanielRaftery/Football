@@ -1,9 +1,9 @@
 from db_connection import connect_to_db
-import re, feedparser
+import re
+import feedparser
 from sqlalchemy import exc
 import pandas as pd
 import numpy as np
-
 
 pd.options.display.max_columns = 999
 
@@ -82,38 +82,100 @@ def prepare_df(data, entry):
     return [date, home_team, home_df, home_team_identifier, away_team, away_df, away_team_identifier]
 
 
+def _table_write(tid, data, table, conn):
+    """
+    Helper function to write to league tables
+
+    :param tid: team name
+    :param data: data to be written to table
+    :param table: table to be updated (home_league_table, away_league_table, league_table)
+    :param conn: connection to be used
+    """
+    sql_query = ""
+    if int(data.at[0, 'win']) == 1:
+        sql_query = """
+            UPDATE {0}
+            SET w=w+1
+            WHERE team='{1}'""".format(table, tid)
+    elif int(data.at[0, 'draw']) == 1:
+        sql_query = """
+            UPDATE {0}
+            SET d=d+1
+            WHERE team='{1}'""".format(table, tid)
+    elif int(data.at[0, 'loss']) == 1:
+        sql_query = """
+            UPDATE {0}
+            SET l=l+1
+            WHERE team='{1}'""".format(table, tid)
+    sql = """
+        UPDATE {0}
+        SET mp=mp+1, gf=gf+{1}, ga=ga+{2}
+        WHERE team='{3}'""".format(table, int(data.at[0, 'goals_for']), int(data.at[0, 'goals_against']), tid)
+    conn.execute(sql)
+    conn.execute(sql_query)
+
+
 def write_to_league_table(team_id, team_data, engine):
     """
-    Updates team's record in the league table
-    :param team_id: team to update records of
-    :param team_data: data to be written
-    :param engine: database connection
-    :return:
+    Updates team's record in the league table, using the method _table_write()
+
+    :param team_id: team name
+    :param team_data: data to be written to table
+    :param engine: database engine to connect to
     """
     connection = engine.connect()
-    wdl_sql = ""
-    if int(team_data.at[0, 'win']) == 1:
-        wdl_sql = """
-            UPDATE league_table
-            SET w=w+1
-            WHERE team='{}'""".format(team_id)
-    elif int(team_data.at[0, 'draw']) == 1:
-        wdl_sql = """
-            UPDATE league_table
-            SET d=d+1
-            WHERE team='{}'""".format(team_id)
-    elif int(team_data.at[0, 'loss']) == 1:
-        wdl_sql = """
-            UPDATE league_table
-            SET l=l+1
-            WHERE team='{}'""".format(team_id)
-    sql = """
-        UPDATE league_table
-        SET mp=mp+1, gf=gf+{0}, ga=ga+{1}
-        WHERE team='{2}'""".format(int(team_data.at[0, 'goals_for']), int(team_data.at[0, 'goals_against']), team_id)
+    _table_write(team_id, team_data, 'league_table', connection)
+    connection.close()
+    #
+    # wdl_sql = ""
+    # if int(team_data.at[0, 'win']) == 1:
+    #     wdl_sql = """
+    #         UPDATE league_table
+    #         SET w=w+1
+    #         WHERE team='{}'""".format(team_id)
+    # elif int(team_data.at[0, 'draw']) == 1:
+    #     wdl_sql = """
+    #         UPDATE league_table
+    #         SET d=d+1
+    #         WHERE team='{}'""".format(team_id)
+    # elif int(team_data.at[0, 'loss']) == 1:
+    #     wdl_sql = """
+    #         UPDATE league_table
+    #         SET l=l+1
+    #         WHERE team='{}'""".format(team_id)
+    # sql = """
+    #     UPDATE league_table
+    #     SET mp=mp+1, gf=gf+{0}, ga=ga+{1}
+    #     WHERE team='{2}'""".format(int(team_data.at[0, 'goals_for']), int(team_data.at[0, 'goals_against']), team_id)
+    #
+    # connection.execute(sql)
+    # connection.execute(wdl_sql)
+    # connection.close()
 
-    connection.execute(sql)
-    connection.execute(wdl_sql)
+
+def update_home_table(team_id, team_data, engine):
+    """
+    Updates team's records in home league table, using the method _table_write()
+
+    :param team_id: team name
+    :param team_data: data to be written to table
+    :param engine: database engine to connect to
+    """
+    connection = engine.connect()
+    _table_write(team_id, team_data, 'home_league_table', connection)
+    connection.close()
+
+
+def update_away_table(team_id, team_data, engine):
+    """
+    Updates team's records in the away league table, using the method _table_write()
+
+    :param team_id: team name
+    :param team_data: data to be written to table
+    :param engine: database engine to connect to
+    """
+    connection = engine.connect()
+    _table_write(team_id, team_data, 'away_league_table', connection)
     connection.close()
 
 
@@ -178,14 +240,17 @@ def parse_data():
             print("\nWriting data...")
 
         for i in range(len(data.entries)):
-            [date, home_team, home_team_df, home_team_id, away_team, away_team_df, away_team_id] = prepare_df(data, i)
+            [date, home_team, home_team_df, home_team_id, away_team, away_team_df, away_team_id] = prepare_df(data,
+                                                                                                              i)
             if date in date_list:
                 print("\nWriting data to...\n{}".format(home_team_df))
                 write_to_db(home_team_id, home_team_df, engine)
                 print("\nWriting data to...\n{}".format(away_team_df))
                 write_to_db(away_team_id, away_team_df, engine)
                 write_to_league_table(home_team, home_team_df, engine)
+                update_home_table(home_team, home_team_df, engine)
                 write_to_league_table(away_team, away_team_df, engine)
+                update_away_table(away_team, away_team_df, engine)
 
         print("\nComplete!")
     else:
