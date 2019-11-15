@@ -32,11 +32,13 @@ def connect_to_db(schema):
     user = text[1].strip('\n')
     dbname = str(schema)
     password = text[3].strip('\n')
-
-    # server.start()
-    eng = "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(user, password, '', 1111, dbname)
-    engine = sqla.create_engine(eng, echo=False)
-    return engine  # , server
+    if dbname in ['premier_league', 'championship', 'league_one','league_two']:
+        eng = "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(user, password, '', 1111, dbname)
+        engine = sqla.create_engine(eng, echo=False)
+        return engine
+    else:
+        print("Invalid league entered!")
+        return False
 
 
 if __name__ == '__main__':
