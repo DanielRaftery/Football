@@ -126,31 +126,6 @@ def write_to_league_table(team_id, team_data, engine):
     connection = engine.connect()
     _table_write(team_id, team_data, 'league_table', connection)
     connection.close()
-    #
-    # wdl_sql = ""
-    # if int(team_data.at[0, 'win']) == 1:
-    #     wdl_sql = """
-    #         UPDATE league_table
-    #         SET w=w+1
-    #         WHERE team='{}'""".format(team_id)
-    # elif int(team_data.at[0, 'draw']) == 1:
-    #     wdl_sql = """
-    #         UPDATE league_table
-    #         SET d=d+1
-    #         WHERE team='{}'""".format(team_id)
-    # elif int(team_data.at[0, 'loss']) == 1:
-    #     wdl_sql = """
-    #         UPDATE league_table
-    #         SET l=l+1
-    #         WHERE team='{}'""".format(team_id)
-    # sql = """
-    #     UPDATE league_table
-    #     SET mp=mp+1, gf=gf+{0}, ga=ga+{1}
-    #     WHERE team='{2}'""".format(int(team_data.at[0, 'goals_for']), int(team_data.at[0, 'goals_against']), team_id)
-    #
-    # connection.execute(sql)
-    # connection.execute(wdl_sql)
-    # connection.close()
 
 
 def update_home_table(team_id, team_data, engine):
