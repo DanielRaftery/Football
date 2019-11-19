@@ -110,6 +110,11 @@ class Team:
         self._set_match_data()
         self.position = self._set_position()
         self.zone = self._set_zone()
+        self.opponent = None
+
+    def set_opposition(self, opponent):
+        self.opponent = opponent
+        self.__stats.xGF = self.expected_scored()
 
     def _set_match_data(self):
         connection = self.engine.connect()
@@ -149,8 +154,8 @@ class Team:
             return False
 
     def set_stats(self):
-        stats_cols = ['GF', 'GA', 'TG', 'Games', 'aGF', 'aGA', 'aTG', 'O/U', 'W', 'D', 'L', 'ATT', 'DEF', 'xGF']
-        self.__stats = pd.DataFrame([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        stats_cols = ['GF', 'GA', 'TG', 'Games', 'aGF', 'aGA', 'aTG', 'O/U', 'W', 'D', 'L', 'ATT', 'DEF', 'xGF', 'xgs']
+        self.__stats = pd.DataFrame([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
                                     columns=stats_cols)
         self.__stats.Games = len(self.__match_data.Opponent.values)
         for i in ['GF', 'GA', 'TG']:
@@ -171,12 +176,13 @@ class Team:
     def get_stats(self):
         return self.__stats
 
-    def expected_scored(self, opp_def):
+    def expected_scored(self):
+        opp_def = self.opponent.get_stats().DEF
         if self.venue == 'HOME':
-            print("\n" + self.name + " xGF")
+            # print("\n" + self.name + " xGF")
             self.__stats.xGF = round(self.__stats.ATT * opp_def * self.league.get_home_stats().aGF, 3)
         elif self.venue == 'AWAY':
-            print("\n" + self.name + " xGF")
+            # print("\n" + self.name + " xGF")
             self.__stats.xGF = round(self.__stats.ATT * opp_def * self.league.get_away_stats().aGF, 3)
         return self.__stats.xGF.values[0]
 
@@ -184,6 +190,15 @@ class Team:
         fig, ax = plt.subplots(1, 1)
         ax.set_title(self.name + " xGF", fontsize=20)
         self._plot_helper(self.__stats.xGF, ax)
+
+    def xgf(self):
+        # self.expected_scored(opponent)
+        x = np.linspace(0, math.ceil(self.__stats.xGF) + 5, math.ceil(self.__stats.xGF) + 6)
+        data = [round((math.pow(self.__stats.xGF, xi) * math.exp(-self.__stats.xGF)) / (math.factorial(xi)), 5) for xi
+                in x]
+
+        self.__stats.xgs = [data] * len(self.__stats)
+        return self.__stats.xgs.values[0]
 
     def display_name(self):
         print("\n\t\t\t*** {0} ({1}) ***\n".format(self.name, self.venue))
