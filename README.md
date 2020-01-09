@@ -1,8 +1,8 @@
 # Football Prediction System
 This project aims to produce probabilistic estimates of the result of a football match from the top four flights of English football (Premier League, Championship, League One and League Two).
 
-# Summary of architecture
+## Summary of architecture
 This project incorporates a database containing a schema for each of the leagues listed above. Within each schema there is an overall league table, a league table for home games only, a league table for away games only and then individual tables for each team. Each team has a table containing results of their matches at home and away to date. After each game day, the results from that day for a given league can be scraped from an RSS feed and the respective tables are updated. This data is then used to produce the predictions.
 
-# Prediction System
+## Prediction System
 The underlying principle used to calculate predictions is that each team can be assigned an "attack rating" (ATT) and a "defense rating" (DEF), along with the assumption that goals scored follow a Poisson distribution. A team's ATT and DEF is calculated with respect to the rest of the league and can vary as the season progresses. Using a combination of these, the expected goals scored by a team playing against a certain opposition and conceded by the same team can be calculated, and from the probability distribution the likelihood of various scorelines can be calculated. Following this, it is trivial to calculate the probability of "Over x Goals" or "Under x Goals" occuring for the match. This data, along with a percentage likelihood of a home win / draw / away draw can be emailed to a given address, with another email linked to the system sending the email. 
